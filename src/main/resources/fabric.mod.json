@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "flavomod",
+  "version": "${version}",
+  "name": "FlavoMod",
+  "description": "A Fabric mod for Minecraft",
+  "authors": [
+    "FlavoSMP"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+  "license": "MIT",
+  "icon": "assets/flavomod/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.flavomod.FlavoMod"
+    ]
+  },
+  "mixins": [
+    "flavomod.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16",
+    "minecraft": ">=1.26.2",
+    "java": ">=21"
+  }
+}
