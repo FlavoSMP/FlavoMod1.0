@@ -5,7 +5,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.numbers.BlankFormat;
+import net.minecraft.scoreboard.number.BlankNumberFormat;
 import net.minecraft.network.protocol.game.ClientboundSetDisplayObjectivePacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
@@ -23,12 +23,12 @@ public class SidebarManager {
     private static int tickCounter = 0;
 
     // =========================================================================
-    // 1. TICK LOOP: Call this every server tick to animate & refresh stats
+    // 1. TICK LOOP: Runs every server tick to animate & refresh stats
     // =========================================================================
     public static void tick(MinecraftServer server) {
         tickCounter++;
         
-        // Updates every 10 ticks (0.5 seconds) for buttery smooth fire animations & live updates
+        // Updates every 10 ticks (0.5 seconds) for smooth fire animations & live updates
         if (tickCounter % 10 == 0) {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 updatePlayerSidebar(server, player);
@@ -37,7 +37,7 @@ public class SidebarManager {
     }
 
     // =========================================================================
-    // 2. CLEANUP: Call this when a player leaves to prevent memory leaks
+    // 2. CLEANUP: Removes player objective when they leave to prevent memory leaks
     // =========================================================================
     public static void onPlayerLeave(MinecraftServer server, ServerPlayer player) {
         ServerScoreboard scoreboard = server.getScoreboard();
@@ -125,7 +125,7 @@ public class SidebarManager {
         ScoreAccess score = scoreboard.getOrCreatePlayerScore(holder, objective);
         score.set(position);
         score.display(displayComponent);
-        score.numberFormat(BlankFormat.INSTANCE); // Hides the ugly numbers on the right side
+        score.setNumberFormat(BlankNumberFormat.INSTANCE); // Hides ugly numbers on the right side
     }
 
     // Smooth waving fire color generator
