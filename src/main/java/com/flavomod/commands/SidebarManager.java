@@ -5,7 +5,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.scoreboard.number.BlankNumberFormat;
+import net.minecraft.network.chat.numbers.BlankFormat;
 import net.minecraft.network.protocol.game.ClientboundSetDisplayObjectivePacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
@@ -125,7 +125,7 @@ public class SidebarManager {
         ScoreAccess score = scoreboard.getOrCreatePlayerScore(holder, objective);
         score.set(position);
         score.display(displayComponent);
-        score.setNumberFormat(BlankNumberFormat.INSTANCE); // Hides ugly numbers on the right side
+        score.setNumberFormat(BlankFormat.INSTANCE); // Hides ugly numbers on the right side
     }
 
     // Smooth waving fire color generator
