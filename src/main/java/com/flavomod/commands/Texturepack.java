@@ -9,20 +9,15 @@ import net.minecraft.util.Formatting;
 
 public class Texturepack {
 
-    // Your Minehut direct resource pack URL
     private static final String PACK_URL = "https://6a7b31d3ad6ea4e2ae52ce5c.manager.minehut.com/v1/resource_packs/a22a133f-c343-45f3-a948-9bcbfe15ce61";
 
     public static void register() {
-        // Send the clickable chat link when the player joins
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayerEntity player = handler.getPlayer();
             sendChatPrompt(player);
         });
     }
 
-    /**
-     * Sends the formatted chat message with a clickable URL fallback.
-     */
     private static void sendChatPrompt(ServerPlayerEntity player) {
         Text clickableLink = Text.literal("👉 [CLICK HERE TO DOWNLOAD TEXTURES] 👈")
             .styled(style -> style
