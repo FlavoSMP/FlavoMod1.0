@@ -2,7 +2,6 @@ package com.flavomod.commands;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.numbers.BlankFormat;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.world.scores.DisplaySlot;
@@ -34,7 +33,7 @@ public class SidebarManager {
             null
         );
 
-        // 3. Set it to display on the SIDEBAR slot
+        // 3. Display on the SIDEBAR slot
         scoreboard.setDisplayObjective(DisplaySlot.SIDEBAR, objective);
 
         // 4. Populate initial lines
@@ -60,8 +59,5 @@ public class SidebarManager {
 
         score.set(position);
         score.display(Component.literal(displayText));
-        
-        // Hides the red numbers on the far right
-      score.setNumberFormat(BlankFormat.INSTANCE);
     }
 }
