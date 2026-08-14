@@ -1,20 +1,25 @@
-package com.flavomod;
+package com.flavomod.commands;
 
-import net.minecraft.scoreboard.*;
-import net.minecraft.scoreboard.number.BlankNumberFormat;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.numbers.BlankFormat;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.server.ServerScoreboard;
+import net.minecraft.world.scores.DisplaySlot;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.ScoreAccess;
+import net.minecraft.world.scores.ScoreHolder;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
 public class SidebarManager {
 
-    private static ScoreboardObjective objective;
+    private static Objective objective;
 
     public static void setupSidebar(MinecraftServer server) {
         ServerScoreboard scoreboard = server.getScoreboard();
 
-        // 1. Clear any old instance of this scoreboard to prevent duplicates
-        ScoreboardObjective existing = scoreboard.getNullableObjective("flavomod_sidebar");
+        // 1. Clear any old instance of this scoreboard
+        Objective existing = scoreboard.getObjective("flavomod_sidebar");
         if (existing != null) {
             scoreboard.removeObjective(existing);
         }
@@ -22,17 +27,17 @@ public class SidebarManager {
         // 2. Create the main objective with a bold title
         objective = scoreboard.addObjective(
             "flavomod_sidebar",
-            ScoreboardCriterion.DUMMY,
-            Text.literal("MINEHUT").formatted(Formatting.BOLD, Formatting.AQUA),
-            ScoreboardCriterion.RenderType.INTEGER,
+            ObjectiveCriteria.DUMMY,
+            Component.literal("MINEHUT").withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA),
+            ObjectiveCriteria.RenderType.INTEGER,
             true,
             null
         );
 
         // 3. Set it to display on the SIDEBAR slot
-        scoreboard.setNullableObjective(ScoreboardDisplaySlot.SIDEBAR, objective);
+        scoreboard.setDisplayObjective(DisplaySlot.SIDEBAR, objective);
 
-        // 4. Populating the initial lines
+        // 4. Populate initial lines
         updateSidebar(server);
     }
 
@@ -40,24 +45,23 @@ public class SidebarManager {
         if (objective == null) return;
         ServerScoreboard scoreboard = server.getScoreboard();
 
-        // Higher score values place the line higher on the sidebar
         setLine(scoreboard, "line_credits", "§fCredits: §a0", 7);
         setLine(scoreboard, "line_gems", "§fGems: §a0", 6);
-        setLine(scoreboard, "line_players", "§fPlayers: §a" + server.getCurrentPlayerCount(), 5);
-        setLine(scoreboard, "line_space1", "§1 ", 4); // Blank line for spacing
+        setLine(scoreboard, "line_players", "§fPlayers: §a" + server.getPlayerCount(), 5);
+        setLine(scoreboard, "line_space1", "§1 ", 4);
         setLine(scoreboard, "line_servers", "§fMy Servers §7(3)", 3);
         setLine(scoreboard, "line_srv1", "§7| §fFlavosmpTest: §eStarter", 2);
-        setLine(scoreboard, "line_srv2", "§7| §fFlavo: §a" + server.getCurrentPlayerCount() + "/10", 1);
+        setLine(scoreboard, "line_srv2", "§7| §fFlavo: §a" + server.getPlayerCount() + "/10", 1);
     }
 
     private static void setLine(ServerScoreboard scoreboard, String holderId, String displayText, int position) {
-        ScoreHolder holder = ScoreHolder.fromName(holderId);
-        ScoreboardScore score = scoreboard.getOrCreateScore(holder, objective);
+        ScoreHolder holder = ScoreHolder.forNameOnly(holderId);
+        ScoreAccess score = scoreboard.getOrCreatePlayerScore(holder, objective);
 
-        score.setScore(position);
-        score.setDisplayText(Text.literal(displayText));
+        score.set(position);
+        score.display(Component.literal(displayText));
         
-        // 1.21 Feature: Hides the default red numbers on the right side!
-        score.setNumberFormat(BlankNumberFormat.INSTANCE);
+        // Hides the red numbers on the far right
+        score.numberFormat(BlankFormat.INSTANCE);
     }
 }
