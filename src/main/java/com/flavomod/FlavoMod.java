@@ -2,7 +2,7 @@ package com.flavomod;
 
 import com.flavomod.commands.SidebarManager;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,17 +15,12 @@ public class FlavoMod implements ModInitializer {
     public void onInitialize() {
         LOGGER.info("FlavoMod 1.21.1 initialized!");
 
-        // 1. Initialize sidebar when the server starts
-        ServerLifecycleEvents.SERVER_STARTED.register(SidebarManager::setupSidebar);
+        // 1. Register the tick loop to animate the title/IP and refresh stats every half-second
+        ServerTickEvents.END_SERVER_TICK.register(SidebarManager::tick);
 
-        // 2. Refresh sidebar count on player join
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            SidebarManager.updateSidebar(server);
-        });
-
-        // 3. Refresh sidebar count on player leave
+        // 2. Clean up player sidebar data when they disconnect to prevent memory leaks
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
-            server.execute(() -> SidebarManager.updateSidebar(server));
+            SidebarManager.onPlayerLeave(server, handler.getPlayer());
         });
     }
 }
