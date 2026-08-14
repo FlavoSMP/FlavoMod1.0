@@ -15,15 +15,18 @@ public class FlavoMod implements ModInitializer {
     public void onInitialize() {
         LOGGER.info("FlavoMod 1.21.1 initialized!");
 
-        // Initialize sidebar when the server starts
+        // 1. Register Texture Pack / Resource Pack enforcement logic
+        Texturepack.register();
+
+        // 2. Initialize sidebar when the server starts
         ServerLifecycleEvents.SERVER_STARTED.register(SidebarManager::setupSidebar);
 
-        // Refresh count on player join
+        // 3. Refresh sidebar count on player join
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             SidebarManager.updateSidebar(server);
         });
 
-        // Refresh count on player leave
+        // 4. Refresh sidebar count on player leave
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             server.execute(() -> SidebarManager.updateSidebar(server));
         });
