@@ -10,6 +10,7 @@ public class FlavoMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		LOGGER.info("FlavoMod initialized!");
+		LOGGER.info("FlavoMod initialized for Minecraft 1.21.1!");
+		// Initialize commands here when they are created
 	}
 }

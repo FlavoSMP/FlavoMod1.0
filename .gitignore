@@ -1,25 +1,22 @@
-# gradle
+# Gradle
 .gradle/
 build/
 out/
 
-# ide
+# IDE
 .idea/
 *.iml
 *.iws
 *.ipr
 .vscode/
-.classpath
-.project
-.settings/
-bin/
+*.swp
+*.swo
+*~
 
-# macos
-*.DS_Store
+# OS
+.DS_Store
+Thumbs.db
 
-# fabric
-run/
-libs/
-
-# misc
-*.log
+# Environment
+.env
+.env.local

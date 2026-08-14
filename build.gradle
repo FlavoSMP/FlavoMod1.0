@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.4.0'
+	id 'fabric-loom' version '1.6.12'
 	id 'maven-publish'
 }
 
@@ -16,6 +16,10 @@ repositories {
 	maven { url = "https://maven.terraformersmc.com/" }
 }
 
+loom {
+	accessWidenerPath = file("src/main/resources/flavomod.accesswidener")
+}
+
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings loom.officialMojangMappings()
@@ -25,9 +29,11 @@ dependencies {
 
 processResources {
 	inputs.property "version", project.version
+	inputs.property "group", project.maven_group
 
 	filesMatching("fabric.mod.json") {
-		expand "version": project.version
+		expand "version": project.version,
+				"group": project.maven_group
 	}
 }
 

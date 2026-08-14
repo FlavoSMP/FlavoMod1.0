@@ -8,8 +8,8 @@
     "FlavoSMP"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://github.com/FlavoSMP/FlavoMod1.0",
+    "sources": "https://github.com/FlavoSMP/FlavoMod1.0"
   },
   "license": "MIT",
   "icon": "assets/flavomod/icon.png",
@@ -23,8 +23,8 @@
     "flavomod.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.16",
-    "minecraft": ">=1.26.2",
+    "fabricloader": ">=0.15",
+    "minecraft": ">=1.21.1",
     "java": ">=21"
   }
 }
