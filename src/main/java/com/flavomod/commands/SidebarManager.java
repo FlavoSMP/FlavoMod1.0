@@ -1,11 +1,120 @@
-// =========================================================================
-    // LOGIC HELPERS
+package com.flavomod.commands;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.network.chat.numbers.BlankFormat;
+import net.minecraft.network.protocol.game.ClientboundSetDisplayObjectivePacket;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.ServerScoreboard;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.scores.DisplaySlot;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.ScoreAccess;
+import net.minecraft.world.scores.ScoreHolder;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
+
+public class SidebarManager {
+
+    private static int tickCounter = 0;
+
     // =========================================================================
+    // 1. TICK LOOP: Call this every server tick to animate & refresh stats
+    // =========================================================================
+    public static void tick(MinecraftServer server) {
+        tickCounter++;
+        
+        // Updates every 10 ticks (0.5 seconds) for buttery smooth fire animations & live updates
+        if (tickCounter % 10 == 0) {
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                updatePlayerSidebar(server, player);
+            }
+        }
+    }
+
+    // =========================================================================
+    // 2. CLEANUP: Call this when a player leaves to prevent memory leaks
+    // =========================================================================
+    public static void onPlayerLeave(MinecraftServer server, ServerPlayer player) {
+        ServerScoreboard scoreboard = server.getScoreboard();
+        String objName = getObjectiveName(player);
+        Objective obj = scoreboard.getObjective(objName);
+        if (obj != null) {
+            scoreboard.removeObjective(obj);
+        }
+    }
 
     private static String getObjectiveName(ServerPlayer player) {
         String name = "sb_" + player.getScoreboardName();
         return name.length() > 16 ? name.substring(0, 16) : name;
     }
+
+    // =========================================================================
+    // 3. SIDEBAR BUILDER & REFRESHER
+    // =========================================================================
+    public static void updatePlayerSidebar(MinecraftServer server, ServerPlayer player) {
+        ServerScoreboard scoreboard = server.getScoreboard();
+        String objName = getObjectiveName(player);
+        Objective objective = scoreboard.getObjective(objName);
+
+        // Create a dedicated personal scoreboard objective for this player if it doesn't exist
+        if (objective == null) {
+            objective = scoreboard.addObjective(
+                objName,
+                ObjectiveCriteria.DUMMY,
+                Component.empty(),
+                ObjectiveCriteria.RenderType.INTEGER,
+                true,
+                null
+            );
+            // Force it to display ONLY for this player via a packet
+            player.connection.send(new ClientboundSetDisplayObjectivePacket(DisplaySlot.SIDEBAR, objective));
+        }
+
+        // --- TITLE DESIGN: [Red Shard] Flavo SMP [Red Shard] ---
+        MutableComponent redShard = Component.literal("✦").withStyle(ChatFormatting.RED, ChatFormatting.BOLD);
+        MutableComponent title = Component.empty()
+            .append(redShard).append(" ")
+            .append(getFireText("Flavo SMP", tickCounter))
+            .append(" ")
+            .append(redShard);
+        objective.setDisplayName(title);
+
+        // --- DATA COLLECTION (Inventory & Internal Stats) ---
+        int money = countItems(player, Items.EMERALD);
+        int fireShards = countItems(player, Items.AMETHYST_SHARD);
+        int kills = player.getStats().getValue(Stats.CUSTOM.get(Stats.PLAYER_KILLS));
+        int deaths = player.getStats().getValue(Stats.CUSTOM.get(Stats.DEATHS));
+        int keyall = countItems(player, Items.TRIPWIRE_HOOK);
+        String playtime = getFormattedPlaytime(player);
+
+        // --- POPULATE LINES ---
+        int line = 11;
+
+        setLine(scoreboard, objective, "line_div1", "§8─────────────", line--);
+        setLine(scoreboard, objective, "line_money", "🟩 §fMoney: §a" + money, line--);
+        setLine(scoreboard, objective, "line_shards", "§c✦ §fFire shards: §d" + fireShards, line--);
+        setLine(scoreboard, objective, "line_kills", "⚔ §fKills: §c" + kills, line--);
+        setLine(scoreboard, objective, "line_deaths", "🛡 §fDeaths: §7" + deaths, line--);
+        setLine(scoreboard, objective, "line_keyall", "🗝 §fKeyall: §e" + keyall, line--);
+        setLine(scoreboard, objective, "line_playtime", "⏱ §fPlaytime: §b" + playtime, line--);
+        setLine(scoreboard, objective, "line_div2", "§8─────────────", line--);
+        
+        // Static red server address title
+        setLine(scoreboard, objective, "line_addr_title", "§cServer Address", line--);
+        
+        // Animated Server IP
+        MutableComponent animatedIp = getFireText("FlavoSMP.minehut.gg", tickCounter);
+        setLineComponent(scoreboard, objective, "line_addr", animatedIp, line--);
+    }
+
+    // =========================================================================
+    // HELPER METHODS
+    // =========================================================================
 
     private static void setLine(ServerScoreboard scoreboard, Objective objective, String holderId, String displayText, int position) {
         setLineComponent(scoreboard, objective, holderId, Component.literal(displayText), position);
@@ -16,12 +125,10 @@
         ScoreAccess score = scoreboard.getOrCreatePlayerScore(holder, objective);
         score.set(position);
         score.display(displayComponent);
-        
-        // This hides the ugly red numbers on the right side of the sidebar! (1.20.3+ feature)
-        score.numberFormat(BlankFormat.INSTANCE);
+        score.numberFormat(BlankFormat.INSTANCE); // Hides the ugly numbers on the right side
     }
 
-    // Generates a smooth, waving fire color effect loop
+    // Smooth waving fire color generator
     private static MutableComponent getFireText(String text, int tick) {
         TextColor[] fireColors = {
             TextColor.fromLegacyFormat(ChatFormatting.DARK_RED),
@@ -33,8 +140,8 @@
         };
 
         MutableComponent result = Component.empty();
-        int animationFrame = tick / 5; // Slows down the loop so it's smooth, not flashing
-        
+        int animationFrame = tick / 4; // Animation speed
+
         for (int i = 0; i < text.length(); i++) {
             int colorIndex = (animationFrame + i) % fireColors.length;
             result.append(Component.literal(String.valueOf(text.charAt(i)))
@@ -43,43 +150,22 @@
         return result;
     }
 
-    // =========================================================================
-    // DATA METHODS: Now pulling from Vanilla Scoreboards!
-    // =========================================================================
-    
-    // Helper to grab a score from a vanilla objective
-    private static int getVanillaScore(ServerScoreboard scoreboard, ServerPlayer player, String objectiveName) {
-        Objective obj = scoreboard.getObjective(objectiveName);
-        if (obj != null) {
-            return scoreboard.getOrCreatePlayerScore(player, obj).get();
+    private static int countItems(ServerPlayer player, net.minecraft.world.item.Item item) {
+        int count = 0;
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            net.minecraft.world.item.ItemStack stack = player.getInventory().getItem(i);
+            if (stack.is(item)) {
+                count += stack.getCount();
+            }
         }
-        return 0; // If the objective doesn't exist yet, just show 0
+        return count;
     }
 
-    private static int getMoney(ServerPlayer player) { 
-        return getVanillaScore(player.server.getScoreboard(), player, "money"); 
+    private static String getFormattedPlaytime(ServerPlayer player) {
+        int ticks = player.getStats().getValue(Stats.CUSTOM.get(Stats.PLAY_TIME));
+        int totalMins = ticks / 1200; // 1200 ticks = 1 minute
+        int hours = totalMins / 60;
+        int mins = totalMins % 60;
+        return hours + "h " + mins + "m";
     }
-    
-    private static int getFireShards(ServerPlayer player) { 
-        return getVanillaScore(player.server.getScoreboard(), player, "shards"); 
-    }
-    
-    private static int getKills(ServerPlayer player) { 
-        return getVanillaScore(player.server.getScoreboard(), player, "kills"); 
-    }
-    
-    private static int getDeaths(ServerPlayer player) { 
-        return getVanillaScore(player.server.getScoreboard(), player, "deaths"); 
-    }
-    
-    private static int getKeyall(ServerPlayer player) { 
-        return getVanillaScore(player.server.getScoreboard(), player, "keyall"); 
-    }
-    
-    // Playtime is usually tracked in ticks/minutes, you can customize this conversion
-    private static String getPlaytime(ServerPlayer player) { 
-        int minutes = getVanillaScore(player.server.getScoreboard(), player, "playtime");
-        int hours = minutes / 60;
-        int remainingMins = minutes % 60;
-        return hours + "h " + remainingMins + "m"; 
-    }
+}
