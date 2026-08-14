@@ -7,7 +7,7 @@ on:
     branches: [ "main", "master" ]
 
 jobs:
-  build:
+_build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -19,8 +19,8 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Make Gradle Wrapper Executable
-        run: chmod +x gradlew
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Build Mod with Gradle
         run: ./gradlew build
