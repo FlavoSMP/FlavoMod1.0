@@ -1,6 +1,7 @@
 package com.flavomod;
 
 import com.flavomod.commands.SidebarManager;
+import com.flavomod.commands.Texturepack;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
