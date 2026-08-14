@@ -62,6 +62,6 @@ public class SidebarManager {
         score.display(Component.literal(displayText));
         
         // Hides the red numbers on the far right
-        score.numberFormat(BlankFormat.INSTANCE);
+      score.setNumberFormat(BlankFormat.INSTANCE);
     }
 }
