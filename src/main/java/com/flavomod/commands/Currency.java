@@ -1,4 +1,4 @@
-package com.flavomod;
+package com.flavomod.commands;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
