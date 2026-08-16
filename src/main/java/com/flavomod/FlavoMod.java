@@ -1,7 +1,7 @@
 package com.flavomod;
 
 import com.flavomod.commands.SidebarManager;
-import com.flavomod.currency.Currency;
+import com.flavomod.commands.Currency;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
