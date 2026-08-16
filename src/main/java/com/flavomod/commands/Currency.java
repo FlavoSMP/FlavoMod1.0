@@ -1,6 +1,7 @@
 package com.flavomod.commands;
 
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 
@@ -15,18 +16,11 @@ public class Currency extends SavedData {
     private final Map<UUID, Long> money = new HashMap<>();
     private final Map<UUID, Long> fireShards = new HashMap<>();
 
-    // =========================================================================
-    // CREATE / LOAD
-    // =========================================================================
-
     public static Currency create() {
         return new Currency();
     }
 
-    public static Currency load(
-            CompoundTag tag,
-            net.minecraft.core.HolderLookup.Provider registries
-    ) {
+    public static Currency load(CompoundTag tag, HolderLookup.Provider registries) {
         Currency currency = new Currency();
 
         CompoundTag moneyTag = tag.getCompound("Money");
@@ -35,10 +29,7 @@ public class Currency extends SavedData {
         for (String uuidString : moneyTag.getAllKeys()) {
             try {
                 UUID uuid = UUID.fromString(uuidString);
-                currency.money.put(
-                        uuid,
-                        moneyTag.getLong(uuidString)
-                );
+                currency.money.put(uuid, moneyTag.getLong(uuidString));
             } catch (IllegalArgumentException ignored) {
                 // Ignore invalid UUID entries.
             }
@@ -47,10 +38,7 @@ public class Currency extends SavedData {
         for (String uuidString : shardsTag.getAllKeys()) {
             try {
                 UUID uuid = UUID.fromString(uuidString);
-                currency.fireShards.put(
-                        uuid,
-                        shardsTag.getLong(uuidString)
-                );
+                currency.fireShards.put(uuid, shardsTag.getLong(uuidString));
             } catch (IllegalArgumentException ignored) {
                 // Ignore invalid UUID entries.
             }
@@ -59,41 +47,23 @@ public class Currency extends SavedData {
         return currency;
     }
 
-    // =========================================================================
-    // SAVE
-    // =========================================================================
-
     @Override
-    public CompoundTag save(
-            CompoundTag tag,
-            net.minecraft.core.HolderLookup.Provider registries
-    ) {
+    public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
         CompoundTag moneyTag = new CompoundTag();
         CompoundTag shardsTag = new CompoundTag();
 
         for (Map.Entry<UUID, Long> entry : money.entrySet()) {
-            moneyTag.putLong(
-                    entry.getKey().toString(),
-                    entry.getValue()
-            );
+            moneyTag.putLong(entry.getKey().toString(), entry.getValue());
         }
 
         for (Map.Entry<UUID, Long> entry : fireShards.entrySet()) {
-            shardsTag.putLong(
-                    entry.getKey().toString(),
-                    entry.getValue()
-            );
+            shardsTag.putLong(entry.getKey().toString(), entry.getValue());
         }
 
         tag.put("Money", moneyTag);
         tag.put("FireShards", shardsTag);
-
         return tag;
     }
-
-    // =========================================================================
-    // GET CURRENCY DATA
-    // =========================================================================
 
     public long getMoney(UUID playerUuid) {
         return money.getOrDefault(playerUuid, 0L);
@@ -103,45 +73,31 @@ public class Currency extends SavedData {
         return fireShards.getOrDefault(playerUuid, 0L);
     }
 
-    // =========================================================================
-    // SET CURRENCY
-    // =========================================================================
-
     public void setMoney(UUID playerUuid, long amount) {
-        money.put(playerUuid, Math.max(0, amount));
+        money.put(playerUuid, Math.max(0L, amount));
         setDirty();
     }
 
     public void setFireShards(UUID playerUuid, long amount) {
-        fireShards.put(playerUuid, Math.max(0, amount));
+        fireShards.put(playerUuid, Math.max(0L, amount));
         setDirty();
     }
 
-    // =========================================================================
-    // ADD CURRENCY
-    // =========================================================================
-
     public void addMoney(UUID playerUuid, long amount) {
-        long current = getMoney(playerUuid);
+        if (amount < 0) {
+            return;
+        }
 
-        setMoney(
-                playerUuid,
-                Math.max(0, current + amount)
-        );
+        setMoney(playerUuid, addWithoutOverflow(getMoney(playerUuid), amount));
     }
 
     public void addFireShards(UUID playerUuid, long amount) {
-        long current = getFireShards(playerUuid);
+        if (amount < 0) {
+            return;
+        }
 
-        setFireShards(
-                playerUuid,
-                Math.max(0, current + amount)
-        );
+        setFireShards(playerUuid, addWithoutOverflow(getFireShards(playerUuid), amount));
     }
-
-    // =========================================================================
-    // REMOVE CURRENCY
-    // =========================================================================
 
     public boolean removeMoney(UUID playerUuid, long amount) {
         if (amount < 0) {
@@ -149,16 +105,11 @@ public class Currency extends SavedData {
         }
 
         long current = getMoney(playerUuid);
-
         if (current < amount) {
             return false;
         }
 
-        setMoney(
-                playerUuid,
-                current - amount
-        );
-
+        setMoney(playerUuid, current - amount);
         return true;
     }
 
@@ -168,22 +119,17 @@ public class Currency extends SavedData {
         }
 
         long current = getFireShards(playerUuid);
-
         if (current < amount) {
             return false;
         }
 
-        setFireShards(
-                playerUuid,
-                current - amount
-        );
-
+        setFireShards(playerUuid, current - amount);
         return true;
     }
 
-    // =========================================================================
-    // SERVER ACCESS
-    // =========================================================================
+    private static long addWithoutOverflow(long current, long amount) {
+        return amount > Long.MAX_VALUE - current ? Long.MAX_VALUE : current + amount;
+    }
 
     public static Currency get(MinecraftServer server) {
         return server.overworld()
