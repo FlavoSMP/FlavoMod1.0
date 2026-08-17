@@ -1,6 +1,7 @@
 package com.flavomod.commands;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.nbt.CompoundTag;
 
@@ -11,9 +12,33 @@ import java.util.UUID;
 public class Currency extends SavedData {
 
     private static final String DATA_NAME = "flavomod_currency";
+    private static Currency instance;
 
     private final Map<UUID, Long> money = new HashMap<>();
     private final Map<UUID, Long> fireShards = new HashMap<>();
+
+    // =========================================================================
+    // INITIALIZE
+    // =========================================================================
+
+    public static void initialize() {
+        // Initialization placeholder - called on mod load
+        // Instance will be created/loaded via get() when first accessed
+    }
+
+    // =========================================================================
+    // PLAYER LOAD / SAVE
+    // =========================================================================
+
+    public static void loadPlayer(ServerPlayer player) {
+        // Players are automatically loaded when accessing Currency.get(server)
+        // This is a placeholder for any additional per-player setup
+    }
+
+    public static void savePlayer(ServerPlayer player) {
+        // SavedData automatically handles persistence via setDirty()
+        // This is a placeholder for any additional per-player cleanup
+    }
 
     // =========================================================================
     // CREATE / LOAD
