@@ -1,6 +1,5 @@
 package com.flavomod.commands;
 
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.nbt.CompoundTag;
