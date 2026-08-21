@@ -2,6 +2,7 @@ package com.flavomod;
 
 import com.flavomod.commands.SidebarManager;
 import com.flavomod.commands.Currency;
+import com.flavomod.commands.WorldCreator;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -19,6 +20,7 @@ public class FlavoMod implements ModInitializer {
 
         // Initialize currency system
         Currency.initialize();
+        WorldCreator.register();
 
         // Sidebar updates / animation
         ServerTickEvents.END_SERVER_TICK.register(SidebarManager::tick);
